@@ -4,12 +4,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
 import org.apache.velocity.VelocityContext;
 import org.kotemaru.android.delegatehandler.annotation.DelegateHandler;
 
-//@SupportedSourceVersion(SourceVersion.RELEASE_6)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("org.kotemaru.android.delegatehandler.annotation.DelegateHandler")
 // <-- Chenge it!!
 public class DelegateHandlerAp extends ApBase
