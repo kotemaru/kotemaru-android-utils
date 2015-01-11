@@ -5,6 +5,7 @@ import org.kotemaru.android.delegatehandler.sample.MyApplication.Updater;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,7 +19,8 @@ import android.widget.TextView;
 public class MainActivity extends Activity implements Updater {
 	private Controller mController;
 	public Model mModel;
-	public Dialog mDialog;
+	public ProgressDialog mProgress;
+	public Dialog mErrorDialog;
 
 	private EditText mUrlEdit;
 	private TextView mTextView;
@@ -47,7 +49,9 @@ public class MainActivity extends Activity implements Updater {
 		mGoBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View btn) {
+				mModel.setIsProgress(true);
 				mController.mHandler.doGetHtml(mModel.getUrl());
+				update();
 			}
 		});
 		mTextView = (TextView) findViewById(R.id.text_html);
@@ -60,31 +64,42 @@ public class MainActivity extends Activity implements Updater {
 	@Override
 	public void onPause() {
 		super.onPause();
-		if (mDialog != null) {
-			mDialog.dismiss();
-			mDialog = null;
-		}
+		doProgressDialog(false);
+		doErrorDialog(null);
 	}
 	@Override
 	public void update() {
-		if (mModel.getError() != null) {
-			doErrorDialog();
-			return;
-		}
+		doProgressDialog(mModel.isProgress());
+		doErrorDialog(mModel.getError());
 		mUrlEdit.setText(mModel.getUrl());
 		mTextView.setText(mModel.getText());
 	}
-	private void doErrorDialog() {
-		String message = mModel.getError().getMessage();
-		AlertDialog.Builder dialog = new AlertDialog.Builder(this).setTitle("Error!").setMessage(message);
-		dialog.setCancelable(false);
-		dialog.setPositiveButton("OK", new DialogInterface.OnClickListener(){
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				mModel.setError(null);
-				dialog.dismiss();
-			}
-		});
-		mDialog = dialog.show();
+	private void doProgressDialog(boolean isProgress) {
+		if (isProgress && mProgress == null) {
+			mProgress = new ProgressDialog(this);
+			mProgress.setMessage("Connecting...");
+			mProgress.show();
+		} else if (!isProgress && mProgress != null) {
+			mProgress.dismiss();
+			mProgress = null;
+		}
+	}
+	private void doErrorDialog(Throwable error) {
+		if (error != null && mErrorDialog == null) {
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+					.setTitle("Error!").setMessage(error.getMessage());
+			dialog.setCancelable(false);
+			dialog.setPositiveButton("OK", new DialogInterface.OnClickListener(){
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					mModel.setError(null);
+					dialog.dismiss();
+				}
+			});
+			mErrorDialog = dialog.show();
+		} else if (error == null && mErrorDialog != null) {
+			mErrorDialog.dismiss();
+			mErrorDialog = null;
+		}
 	}
 }
