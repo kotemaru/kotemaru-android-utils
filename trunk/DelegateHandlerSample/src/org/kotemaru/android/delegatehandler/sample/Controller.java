@@ -40,6 +40,7 @@ public class Controller implements OnDelegateHandlerErrorListener {
 	
 	@Handling(thread = ThreadManager.UI)
 	public void doGetHtmlFinish(String html) {
+		mApplication.mModel.setIsProgress(false);
 		mApplication.mModel.setText(html);
 		mApplication.updateCurrentActivity();
 	}
@@ -48,6 +49,7 @@ public class Controller implements OnDelegateHandlerErrorListener {
 	@Handling(thread = ThreadManager.UI)
 	public void onDelegateHandlerError(Throwable t, String methodName, Object... arguments) {
 		Log.e(TAG, "onDelegateHandlerError:" + t, t);
+		mApplication.mModel.setIsProgress(false);
 		mApplication.mModel.setError(t);
 		mApplication.updateCurrentActivity();
 	}
