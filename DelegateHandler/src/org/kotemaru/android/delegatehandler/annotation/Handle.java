@@ -6,12 +6,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.kotemaru.android.delegatehandler.rt.ThreadManager;
+import org.kotemaru.android.fw.tm.ThreadManager;
 
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
 @Documented
-public @interface Handling {
+public @interface Handle {
 	String thread() default ThreadManager.WORKER;
 	int delay() default 0;
 	int retry() default 0;

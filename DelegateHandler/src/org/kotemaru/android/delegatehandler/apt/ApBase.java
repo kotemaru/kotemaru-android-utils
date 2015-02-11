@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.apache.velocity.runtime.resource.loader.FileResourceLoader;
 
 /**
  * Velocity を利用してソースを生成する注釈処理の基底クラス。
@@ -33,30 +35,47 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
  * <br>- - @SupportedAnnotationTypes("処理する注釈クラス名（フル）")
  * @author kotemaru.org
  */
-public abstract class ApBase extends AbstractProcessor  {
+public abstract class ApBase extends AbstractProcessor {
 	protected ProcessingEnvironment environment;
 
 	public ApBase() {
 	}
-	
+	private final static Set<String> OPTIONS = new HashSet<String>();
+	static {
+		OPTIONS.add("template.path");
+	};
+
+	@Override
+	public Set<String> getSupportedOptions() {
+		return OPTIONS;
+	}
+
 	/**
 	 * 初期化処理。
 	 * <br>- 環境を貰い、Velocityを初期化する。
 	 * <br>- 注意事項：Eclipse の注釈処理のバグで jar を差し替えるとVelocityが jar 内の
-	 *   リソースを参照出来なくなる。=> Eclipse再起動が必要。
+	 * リソースを参照出来なくなる。=> Eclipse再起動が必要。
 	 */
 	@Override
 	public void init(ProcessingEnvironment env) {
 		super.init(env);
 		this.environment = env;
-		Velocity.setProperty("runtime.log.logsystem.class","");
- 		Velocity.setProperty("resource.loader","class");
-		Velocity.setProperty("class.resource.loader.class",
-							ClasspathResourceLoader.class.getName());
+
+		String path = env.getOptions().get("template.path");
+		log("path="+path);
+		if (path != null) {
+			Velocity.setProperty("resource.loader", "file");
+			Velocity.setProperty("file.resource.loader.class", FileResourceLoader.class.getName());
+			Velocity.setProperty("file.resource.loader.path", path);
+		} else {
+			Velocity.setProperty("resource.loader", "class");
+			Velocity.setProperty("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+		}
+		Velocity.setProperty("runtime.log.logsystem.class", "");
+
 		Velocity.init();
 	}
-	
-	
+
 	/**
 	 * 注釈処理。
 	 * <br>- 戻り値が良く解って無いが生成ソースに対してさらに注釈処理が必要な場合、true を返すっぽい。
@@ -65,13 +84,13 @@ public abstract class ApBase extends AbstractProcessor  {
 	 */
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		//System.out.println("-------------->"+annotations.toString());
+		// System.out.println("-------------->"+annotations.toString());
 		if (annotations.isEmpty()) return true;
 		List<TypeElement> list = processClasses(annotations, roundEnv);
 		return list.isEmpty();
-		//return false;
+		// return false;
 	}
-	
+
 	/**
 	 * 注釈処理。
 	 * <br>- 引数で貰ったクラスをすべて処理して見ようとする。
@@ -82,7 +101,7 @@ public abstract class ApBase extends AbstractProcessor  {
 	protected List<TypeElement> processClasses(
 			Set<? extends TypeElement> annotations,
 			RoundEnvironment roundEnv
-	) {
+			) {
 		log(annotations.toString());
 
 		List<TypeElement> list = new ArrayList<TypeElement>();
@@ -104,7 +123,7 @@ public abstract class ApBase extends AbstractProcessor  {
 		}
 		return list;
 	}
-	
+
 	/**
 	 * クラス１個の注釈処理。
 	 * @param classDecl 対象クラス
@@ -113,13 +132,12 @@ public abstract class ApBase extends AbstractProcessor  {
 	 */
 	protected abstract boolean processClass(TypeElement classDecl) throws Exception;
 
-	
 	/**
 	 * Velocity の実行（Javaソース用）。出力先はパッケージ名とクラス名から自動生成。
 	 * @param context VelocityContext
 	 * @param pkgName パッケージ名
 	 * @param clsName クラス名
-	 * @param templ  Velocityテンプレート名。
+	 * @param templ Velocityテンプレート名。
 	 * @throws Exception
 	 */
 	protected void applyTemplate(VelocityContext context,
@@ -130,18 +148,18 @@ public abstract class ApBase extends AbstractProcessor  {
 
 		Template template = getVelocityTemplate(templ);
 		Filer filer = environment.getFiler();
-		JavaFileObject file = filer.createSourceFile(pkgName+'.'+clsName);
+		JavaFileObject file = filer.createSourceFile(pkgName + '.' + clsName);
 		PrintWriter writer = new PrintWriter(file.openWriter());
 		template.merge(context, writer);
 		writer.close();
 	}
-	
+
 	/**
 	 * Velocity の実行(リソース用）。出力先はパッケージ名とリソース名から自動生成。
 	 * @param context VelocityContext
 	 * @param pkgName パッケージ名
 	 * @param resName リソース名
-	 * @param templ  Velocityテンプレート名。
+	 * @param templ Velocityテンプレート名。
 	 * @throws Exception
 	 */
 	public void applyTemplateText(VelocityContext context,
@@ -152,15 +170,15 @@ public abstract class ApBase extends AbstractProcessor  {
 
 		Template template = getVelocityTemplate(templ);
 
-		String resFullPath = pkgName.replace('.', '/')+"/"+resName;
+		String resFullPath = pkgName.replace('.', '/') + "/" + resName;
 		Filer filer = environment.getFiler();
 		FileObject file = filer.createResource(StandardLocation.SOURCE_OUTPUT
-				, "", resFullPath, (Element[])null);
+				, "", resFullPath, (Element[]) null);
 		PrintWriter writer = new PrintWriter(file.openWriter());
 		template.merge(context, writer);
 		writer.close();
 	}
-	
+
 	/**
 	 * Velocityテンプレート取得。
 	 * @param templ テンプレート名。（リソースのパス名）
@@ -168,18 +186,18 @@ public abstract class ApBase extends AbstractProcessor  {
 	 */
 	protected Template getVelocityTemplate(String templ) {
 		try {
-			return Velocity.getTemplate("/"+templ);
+			return Velocity.getTemplate("/" + templ);
 		} catch (Exception e) {
 			// - 注意事項：Eclipse の注釈処理のバグで jar を差し替えるとVelocityが jar 内の
-			//   リソースを参照出来なくなる。=> Eclipse再起動が必要。
+			// リソースを参照出来なくなる。=> Eclipse再起動が必要。
 			// ここに来る。
 			error(e);
 			throw new RuntimeException(
-				"Template "+templ+" not found. "
-				+e.toString());
+					"Template " + templ + " not found. "
+							+ e.toString());
 		}
 	}
-		
+
 	/**
 	 * ヘルパークラス取得。
 	 * <br>- 以下の３パターンのコンストラクタを試して最初に見つかったもの。
@@ -195,13 +213,15 @@ public abstract class ApBase extends AbstractProcessor  {
 		try {
 			Constructor<?> creator = helperCls.getConstructor(TypeElement.class, ProcessingEnvironment.class);
 			return creator.newInstance(classDecl, environment);
-		} catch (NoSuchMethodException e) {}
-		
+		} catch (NoSuchMethodException e) {
+		}
+
 		try {
 			Constructor<?> creator = helperCls.getConstructor(TypeElement.class);
 			return creator.newInstance(classDecl);
-		} catch (NoSuchMethodException e) {}
-		
+		} catch (NoSuchMethodException e) {
+		}
+
 		Constructor<?> creator = helperCls.getConstructor();
 		return creator.newInstance();
 	}
@@ -210,21 +230,21 @@ public abstract class ApBase extends AbstractProcessor  {
 	 * エラーログ。スタックのフルダンプ。
 	 * @param t 発生した例外
 	 */
-	protected void error(Throwable t){
+	protected void error(Throwable t) {
 		Messager messager = environment.getMessager();
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		messager.printMessage(Kind.ERROR, sw.toString());
 	}
-	
+
 	/**
 	 * ただのログ。
 	 * @param msg
 	 */
-	protected void log(String msg){
+	protected void log(String msg) {
 		Messager messager = environment.getMessager();
 		messager.printMessage(Kind.OTHER, msg);
 	}
-	
+
 }

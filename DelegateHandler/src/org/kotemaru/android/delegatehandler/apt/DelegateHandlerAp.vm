@@ -9,29 +9,34 @@ ${classDecl}        : ClassDeclインスタンス
 // This is generated code.
 package ${packageName};
 
-import org.kotemaru.android.delegatehandler.rt.Runner;
-import org.kotemaru.android.delegatehandler.rt.ThreadManager;
+import org.kotemaru.android.delegatehandler.rt.DelegateRunner;
+import org.kotemaru.android.fw.tm.ThreadManager;
+import org.kotemaru.android.delegatehandler.rt.DelegateHandlerError;
 import android.util.Log;
 
 public class ${className}  $classDecl.implements
 {
 	private static final String TAG = "${className}";
 	private static final String TRACE_TAG = "DH-Trace";
-	private static final boolean IS_DEBUG = ${typeElement.simpleName}.IS_DEBUG;
 
-	public ThreadLocal<Runner> mCurrentRunner = new ThreadLocal<Runner>();
-	public final ${typeElement.simpleName} mOrigin;
-	public final ThreadManager mThreadManager;
+	private ThreadLocal<DelegateRunner> mCurrentRunner = new ThreadLocal<DelegateRunner>();
+	private final ${typeElement.simpleName} mOrigin;
+	private final ThreadManager mThreadManager;
+	private boolean mIsDebug = false;
 
 	public ${className}(${typeElement.simpleName} origin, ThreadManager threadManager) {
 		this.mOrigin = origin;
 		this.mThreadManager = threadManager;
 	}
+	public void setDebugMode(boolean isDebug) {
+		mIsDebug = isDebug;
+	}
 
 ## 元クラスのメソッド一覧を取得
 #foreach( $method in $classDecl.getMethods() )
+#if( $method.hasHandling() )
 	public ${method.elem.returnType} ${method.name}(${method.params}) {
-		final Runner runner = new Runner(){
+		final DelegateRunner runner = new DelegateRunner(){
 			@Override public void run() {
 				mCurrentRunner.set(this);
 				try {
@@ -56,7 +61,7 @@ public class ${className}  $classDecl.implements
 				}
 			}
 		};
-		if (IS_DEBUG) {
+		if (mIsDebug) {
 			Log.v(TRACE_TAG, runner.toTraceString(mCurrentRunner.get(),$method.threadName,"${method.name}" ${method.getArguments(true)}));
 		}
 #if( $method.retry > 0)
@@ -65,10 +70,11 @@ public class ${className}  $classDecl.implements
 		mThreadManager.post($method.threadName, runner, ${method.delay});
 	}
 #end
+#end
 
 #if( ! $classDecl.hasErrorHandler() )
-	private void onDelegateHandlerError(Throwable t, String methodName, Object... arguments);
-		Log.e(TAG, "${method.name} in handler",t);
+	private void onDelegateHandlerError(Throwable t, String methodName, Object... arguments) {
+		Log.e(TAG, methodName+" in handler",t);
 		throw new DelegateHandlerError(t);
 	}
 #end

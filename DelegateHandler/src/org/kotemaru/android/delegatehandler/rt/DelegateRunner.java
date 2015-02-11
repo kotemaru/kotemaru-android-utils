@@ -1,11 +1,13 @@
 package org.kotemaru.android.delegatehandler.rt;
 
-public abstract class Runner implements Runnable {
+import org.kotemaru.android.fw.tm.ThreadManager;
+
+public abstract class DelegateRunner implements Runnable {
 	private int mRetryCount = 0;
 	private int mInterval = 0;
 	private float mIntervalRate = 0;
 
-	public Runner() {
+	public DelegateRunner() {
 	}
 
 	public void setRetryInfo(int retryCount, int interval, float intervalRate) {
@@ -22,7 +24,7 @@ public abstract class Runner implements Runnable {
 	}
 
 
-	public String toTraceString(Runner caller, String threadName, String method, Object... arguments) {
+	public String toTraceString(DelegateRunner caller, String threadName, String method, Object... arguments) {
 		StringBuilder sbuf = new StringBuilder(200);
 		String curThName = Thread.currentThread().getName();
 		if ("main".equals(curThName)) curThName = ThreadManager.UI;

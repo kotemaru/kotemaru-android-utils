@@ -1,18 +1,15 @@
 package org.kotemaru.android.delegatehandler.apt;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
 import org.apache.velocity.VelocityContext;
-import org.kotemaru.android.delegatehandler.annotation.DelegateHandler;
+import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
-@SupportedAnnotationTypes("org.kotemaru.android.delegatehandler.annotation.DelegateHandler")
+@SupportedAnnotationTypes("org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler")
 // <-- Chenge it!!
 public class DelegateHandlerAp extends ApBase
 {
@@ -25,7 +22,7 @@ public class DelegateHandlerAp extends ApBase
 
 	@Override
 	public boolean processClass(TypeElement classDecl) throws Exception {
-		DelegateHandler anno = classDecl.getAnnotation(DelegateHandler.class);
+		GenerateDelegateHandler anno = classDecl.getAnnotation(GenerateDelegateHandler.class);
 		if (anno == null) return false;
 
 		VelocityContext context = new VelocityContext();
@@ -40,13 +37,5 @@ public class DelegateHandlerAp extends ApBase
 		return true;
 	}
 
-	private final static Set<String> OPTIONS = new HashSet<String>();
-	static {
-	};
-
-	@Override
-	public Set<String> getSupportedOptions() {
-		return OPTIONS;
-	}
 
 }
