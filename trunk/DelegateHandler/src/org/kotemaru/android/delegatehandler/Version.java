@@ -7,6 +7,6 @@ public class Version {
 	public static final String Author = "$Author: kotemaru@kotemaru.org $";
 
 	public static void main(String[] args) {
-		System.out.println("DelegateHandler: "+ID);
+		System.out.println("GenerateDelegateHandler: "+ID);
 	}
 }

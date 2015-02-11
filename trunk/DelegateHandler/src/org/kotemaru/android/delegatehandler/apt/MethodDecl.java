@@ -6,17 +6,17 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import org.kotemaru.android.delegatehandler.annotation.Handling;
-import org.kotemaru.android.delegatehandler.rt.ThreadManager;
+import org.kotemaru.android.delegatehandler.annotation.Handle;
+import org.kotemaru.android.fw.tm.ThreadManager;
 
 public class MethodDecl {
 	private ExecutableElement elem;
-	private Handling handling;
+	private Handle handling;
 	//private HandlingClass handlingClass;
 
 	public MethodDecl(TypeElement classDecl, ExecutableElement decl) {
 		this.elem = decl;
-		this.handling = decl.getAnnotation(Handling.class);
+		this.handling = decl.getAnnotation(Handle.class);
 	}
 	public ExecutableElement getElem() {
 		return elem;

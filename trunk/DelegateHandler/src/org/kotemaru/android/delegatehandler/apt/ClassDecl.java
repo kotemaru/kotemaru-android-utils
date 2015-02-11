@@ -16,7 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.kotemaru.android.delegatehandler.annotation.DelegateHandler;
+import org.kotemaru.android.delegatehandler.annotation.GenerateDelegateHandler;
 import org.kotemaru.android.delegatehandler.rt.OnDelegateHandlerErrorListener;
 
 public class ClassDecl extends AptUtil {
@@ -62,7 +62,7 @@ public class ClassDecl extends AptUtil {
 	}
 
 	public CharSequence getImplements() {
-		List<AnnotationValue> impls = getAnnoValues(typeElem, DelegateHandler.class, "implement");
+		List<AnnotationValue> impls = getAnnoValues(typeElem, GenerateDelegateHandler.class, "implement");
 		if (impls == null || impls.size() == 0) return "";
 		StringBuilder sbuf = new StringBuilder("implements ");
 		for (AnnotationValue impl : impls) {
