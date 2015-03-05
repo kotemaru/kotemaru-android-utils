@@ -10,7 +10,7 @@ ${classDecl}        : ClassDeclインスタンス
 package ${packageName};
 
 import org.kotemaru.android.delegatehandler.rt.DelegateRunner;
-import org.kotemaru.android.fw.tm.ThreadManager;
+import org.kotemaru.android.fw.thread.ThreadManager;
 import org.kotemaru.android.delegatehandler.rt.DelegateHandlerError;
 import android.util.Log;
 

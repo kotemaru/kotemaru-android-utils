@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.kotemaru.android.fw.tm.ThreadManager;
+import org.kotemaru.android.fw.thread.ThreadManager;
 
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
