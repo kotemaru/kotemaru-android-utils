@@ -7,7 +7,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.kotemaru.android.delegatehandler.annotation.Handle;
-import org.kotemaru.android.fw.tm.ThreadManager;
+import org.kotemaru.android.fw.thread.ThreadManager;
 
 public class MethodDecl {
 	private ExecutableElement elem;

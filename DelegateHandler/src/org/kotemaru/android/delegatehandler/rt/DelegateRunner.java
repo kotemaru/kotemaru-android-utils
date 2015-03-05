@@ -1,6 +1,6 @@
 package org.kotemaru.android.delegatehandler.rt;
 
-import org.kotemaru.android.fw.tm.ThreadManager;
+import org.kotemaru.android.fw.thread.ThreadManager;
 
 public abstract class DelegateRunner implements Runnable {
 	private int mRetryCount = 0;

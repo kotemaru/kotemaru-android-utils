@@ -1,4 +1,4 @@
-package org.kotemaru.android.fw.tm;
+package org.kotemaru.android.fw.thread;
 
 
 public interface ThreadManager {
